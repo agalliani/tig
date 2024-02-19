@@ -13,20 +13,19 @@ services:
       - tig-iot
 
   influxdb:
-    image: influxdb:2.7-alpine
     container_name: influxdb
-    restart: always
-    ports:
-      - '8086:8086'
+    image: influxdb:latest
+    restart: unless-stopped
     volumes:
-      - influxdb_data:/var/lib/influxdb
-    env_file:
-      - influxv2.env
+      - ./influxdb/config.yml:/etc/influxdb2/config.yml
+      - ./influxdb/data:/var/lib/influxdb2
+    ports:
+      - "8086:8086"
     networks:
       - tig-iot
 
   telegraf:
-    image: telegraf
+    image: telegraf:latest
     container_name: telegraf
     restart: always
     volumes:

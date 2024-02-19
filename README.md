@@ -60,3 +60,15 @@ Now let’s create a new Grafana dashboard. Head to http://localhost:3000/dashbo
 Use the query you want to view your data. And that’s it. You can now query your InfluxDB database from Grafana. Querying InfluxDB is out of the scope of this article and as such I recommend that you read the documentation.
 
 https://docs.influxdata.com/influxdb/v2/tools/grafana/
+
+
+
+
+## Portainer on Linux
+
+docker volume create portainer_data
+
+docker run -d -p 8000:8000 -p 9443:9443 --name portainer --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v portainer_data:/data portainer/portainer-ce:latest
+
+
+https://localhost:9443
