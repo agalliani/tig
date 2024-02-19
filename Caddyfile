@@ -1,0 +1,10 @@
+supergraf.example.com {
+    reverse_proxy grafana:3000
+    encode gzip zstd
+
+    tls /etc/ssl/private/grafana.crt /etc/ssl/private/grafana.key
+
+    log {
+      level error
+    }
+}

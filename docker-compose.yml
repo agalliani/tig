@@ -1,0 +1,86 @@
+version: '3.6'
+services:
+  mosquitto:
+    image: eclipse-mosquitto:latest
+    container_name: mosquitto
+    restart: always
+    volumes:
+      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    networks:
+      - tig-iot
+
+  influxdb:
+    image: influxdb:2.7-alpine
+    container_name: influxdb
+    restart: always
+    ports:
+      - '8086:8086'
+    volumes:
+      - influxdb_data:/var/lib/influxdb
+    env_file:
+      - influxv2.env
+    networks:
+      - tig-iot
+
+  telegraf:
+    image: telegraf
+    container_name: telegraf
+    restart: always
+    volumes:
+    - ./telegraf.conf:/etc/telegraf/telegraf.conf:ro
+    depends_on:
+      - influxdb
+      - mosquitto
+    links:
+      - influxdb
+    ports:
+    - '8125:8125'
+    env_file:
+      - influxv2.env
+    networks:
+      - tig-iot
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    restart: always
+    depends_on:
+      - influxdb
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_INSTALL_PLUGINS=
+    links:
+      - influxdb
+    ports:
+      - '3000:3000'
+    volumes:
+      - grafana_data:/var/lib/grafana
+    networks:
+      - tig-iot
+      
+  caddy:
+    image: caddy:2-alpine
+    container_name: caddy
+    restart: always
+    depends_on:
+      - grafana
+    volumes:
+      - ./grafana/grafana.crt:/etc/ssl/private/grafana.crt:ro,z
+      - ./grafana/grafana.key:/etc/ssl/private/grafana.key:ro,z
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+    ports:
+      - 80:80   # Allows for http redirection
+      - 443:443
+    networks:
+      - tig-iot
+
+networks:
+  tig-iot:
+
+volumes:
+  grafana_data: {}
+  influxdb_data: {}
